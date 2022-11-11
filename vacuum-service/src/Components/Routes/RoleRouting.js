@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 const RoleRouting = ({allowedR}) => {
     const [r,SetR]=useState(localStorage.getItem("role"));
     const location = useLocation();
-    const [u,SetU]=useState(localStorage.getItem("current_user"));
+    const [auth,setAuth]=useState(localStorage.getItem("isauth"));
 
     let ro = [];
 
@@ -13,7 +13,7 @@ const RoleRouting = ({allowedR}) => {
     return(
         ro.find(role => allowedR?.includes(role))
         ?<Outlet />
-        : u == null
+        : auth == "false"
             ? <Navigate to="/login" state={{ from : location}} replace />
             : <Navigate to="/unauthorized" state={{ from : location}} replace />
 

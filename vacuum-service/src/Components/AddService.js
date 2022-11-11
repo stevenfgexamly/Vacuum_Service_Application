@@ -4,7 +4,7 @@ import CardHeader from 'react-bootstrap/esm/CardHeader';
 import CustomToast from './CustomToast.js';
 import axios from 'axios';
 import ToastError from './ToastError';
-
+import { useFormik } from 'formik'
 
 const initialValues = {
     scode: "", name: "", place: "", city: "", avail: false, price: ""
@@ -26,26 +26,33 @@ function AddService() {
         });
     };
 
-    const booleanInputChange = (e) => {
-        setEnabled(current => !current);
-        setService({
-            ...service,
-            avail: enabled,
-        });
-        console.log(enabled);
-    }
+    const validate = values => {
+        const errors = {};
+         if (values.scode.length != 4) {
+          errors.scode = 'Must be 4 numbered code';
+        }
+    
+         if (values.price.length >= 4) {
+          errors.price = 'Price too high';
+        }
 
-    const resetForm = () => {
-        setService(initialValues);
-    };
+     
+     
+        return errors;
+     
+      };
 
-    const createService = (event) => {
-        event.preventDefault();
+    const formik = useFormik({
+        initialValues: {
+          scode: '', name: '', place: '', city: '', avail: false, price: ''
+        },
+        validate,
+        onSubmit:values => {
 
-        axios.post("http://localhost:8080/api/service/admin/saveService", service)
+            axios.post("http://localhost:8080/api/service/admin/saveService", values)
             .then(response => {
                 if (response.data === "success") {
-                    setService(initialValues);
+                    formik.resetForm();
                     setShow(true);
                     setTimeout(() => setShow(false), 3000);
                 }
@@ -58,7 +65,10 @@ function AddService() {
                     setShowError(false);
                 }
             })
-    };
+            
+          },
+   
+      });
 
     return (
         <><br></br>
@@ -70,21 +80,22 @@ function AddService() {
             </div>
             <Card className="bg-dark text-white">
                 <CardHeader><h2>Add Service Center</h2></CardHeader>
-                <Form onReset={resetForm} onSubmit={createService} id="addServiceForm">
+                <Form  onSubmit={formik.handleSubmit} id="addServiceForm">
                     <Card.Body>
                         <Row>
                             <Col>
                                 <Form.Group className="mb-3" controlId="formBasicText">
                                     <Form.Label>Service Center Code</Form.Label>
                                     <Form.Control required name="scode" type="text" placeholder="Code"
-                                        value={service.scode} onChange={inputChange} />
+                                        value={formik.values.scode} onChange={formik.handleChange} />
+                                        {formik.errors.scode ? <div>{formik.errors.scode}</div> : null}
                                 </Form.Group>
                             </Col>
                             <Col>
                                 <Form.Group className="mb-3" controlId="formBasicText">
                                     <Form.Label>Service Center Name</Form.Label>
                                     <Form.Control required name="name" type="text" placeholder="Name"
-                                        value={service.name} onChange={inputChange} />
+                                        value={formik.values.name} onChange={formik.handleChange} />
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -93,14 +104,14 @@ function AddService() {
                                 <Form.Group className="mb-3" controlId="formBasicText">
                                     <Form.Label>Place</Form.Label>
                                     <Form.Control required name="place" type="text" placeholder="Place"
-                                        value={service.place} onChange={inputChange} />
+                                        value={formik.values.place} onChange={formik.handleChange} />
                                 </Form.Group>
                             </Col>
                             <Col>
                                 <Form.Group className="mb-3" controlId="formBasicText">
                                     <Form.Label>City</Form.Label>
                                     <Form.Control required name="city" type="text" placeholder="City"
-                                        value={service.city} onChange={inputChange} />
+                                        value={formik.values.city} onChange={formik.handleChange} />
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -116,8 +127,9 @@ function AddService() {
                             <Col>
                                 <Form.Group className="mb-3" controlId="formBasicText">
                                     <Form.Label>Pricing</Form.Label>
-                                    <Form.Control required name="price" type="number" placeholder="Pricing"
-                                        value={service.price} onChange={inputChange} />
+                                    <Form.Control required name="price" type="number" placeholder="$"
+                                        value={formik.values.price} onChange={formik.handleChange} />
+                                        {formik.errors.price ? <div>{formik.errors.price}</div> : null}
                                 </Form.Group>
                             </Col>
                             <Col></Col>
@@ -128,7 +140,7 @@ function AddService() {
                     <Card.Footer>
                         <center>
                             <Button size="lg" variant="success" style={{ marginRight: '1rem' }} type="submit"> Create Service</Button>
-                            <Button size="lg" variant="danger" style={{ marginLeft: '1rem' }} className='float-right' type="reset">Clear Details</Button>
+                            <Button size="lg" variant="danger" style={{ marginLeft: '1rem' }} className='float-right' onClick={e => formik.resetForm()} type="reset">Clear Details</Button>
                         </center>
                     </Card.Footer>
                 </Form>

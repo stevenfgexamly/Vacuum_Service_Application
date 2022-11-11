@@ -23,6 +23,7 @@ function AccountDetails() {
 
     const logOut = () => {
         localStorage.clear();
+        localStorage.setItem("isauth","false");
         navigate("/login");
     };
 
